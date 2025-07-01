@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"encoding/json"
 	"fmt"
 	"http_server/configs"
+	"http_server/pakages/response"
 	"net/http"
 )
 
@@ -31,12 +31,10 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 			Token: "aaaa",
 		}
 
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(201)
-		json.NewEncoder(writer).Encode(res)
+		response.Json(writer, res, 201 )
 	}
 } 
-
+ 
 func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func (writer http.ResponseWriter, resp *http.Request)  {
 		fmt.Println("REGISTER")
