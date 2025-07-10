@@ -10,15 +10,15 @@ import (
 func main() {
 	config := configs.LoadConfig()
 	router := http.NewServeMux()
-	hello.NewHalloHandler(router);
+	hello.NewHalloHandler(router)
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: config,
 	})
 
 	server := http.Server{
-		Addr: ":8081",
-		Handler: router, 
+		Addr:    ":8081",
+		Handler: router,
 	}
 
 	server.ListenAndServe()
-} 
+}

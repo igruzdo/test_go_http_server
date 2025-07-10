@@ -8,22 +8,22 @@ import (
 )
 
 type Config struct {
-	 Db DbConfig
-	 Auth AuthConfig
+	Db   DbConfig
+	Auth AuthConfig
 }
 
 type DbConfig struct {
-	 Dsn string 
+	Dsn string
 }
 
-type AuthConfig  struct {
-	 Secret  string 
+type AuthConfig struct {
+	Secret string
 }
 
 func LoadConfig() *Config {
 	err := godotenv.Load()
 	if err != nil {
-		 log.Println("env error")
+		log.Println("env error")
 	}
 
 	return &Config{
