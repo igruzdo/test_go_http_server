@@ -17,7 +17,7 @@ func HandleBody[T any](writer *http.ResponseWriter, request *http.Request) (*T, 
 	err = IsValid[T](body)
 
 	if err != nil {
-		response.Json(*writer, "не соответствие схеме", 402)
+		response.Json(*writer, "несоответствие схеме", 402)
 		return nil, err
 	}
 	response.Json(*writer, body, 201)

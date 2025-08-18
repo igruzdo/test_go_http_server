@@ -4,6 +4,9 @@ import (
 	"http_server/pakages/request"
 	"http_server/pakages/response"
 	"net/http"
+	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type LinkHandlerDeps struct {
@@ -32,8 +35,16 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-
 		link := NewLink(body.Url)
+		for {
+
+			existedLink, _ := handler.LinkRepository.GetByHash(link.Hash)
+			if existedLink == nil {
+				break
+			}
+			link.GenerateHash()
+		}
+
 		createdLink, err := handler.LinkRepository.Create(link)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -46,7 +57,29 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 
 func (handler *LinkHandler) Update() http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
+		body, err := request.HandleBody[LinkUpdateRequest](&writer, req)
+		if err != nil {
+			return
+		}
 
+		idString := req.PathValue("id")
+		id, err := strconv.ParseInt(idString, 10, 32)
+
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+		}
+
+		link, err := handler.LinkRepository.Update(&Link{
+			Model: gorm.Model{ID: uint(id)},
+			Url:   body.Url,
+			Hash:  body.Hash,
+		})
+
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+		}
+
+		response.Json(writer, link, http.StatusOK)
 	}
 }
 
