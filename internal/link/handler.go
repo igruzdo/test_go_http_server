@@ -85,7 +85,28 @@ func (handler *LinkHandler) Update() http.HandlerFunc {
 
 func (handler *LinkHandler) Delete() http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		id := req.PathValue("id")
+		idString := req.PathValue("id")
+		id, err := strconv.ParseInt(idString, 10, 32)
+
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		_, err = handler.LinkRepository.GetById(uint(id))
+
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		err = handler.LinkRepository.Delete(uint(id))
+
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response.Json(writer, nil, 200)
 	}
 }
 
