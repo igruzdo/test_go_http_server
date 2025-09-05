@@ -6,6 +6,7 @@ import (
 	"http_server/internal/hello"
 	"http_server/internal/link"
 	"http_server/pakages/db"
+	"http_server/pakages/middleware"
 	"net/http"
 )
 
@@ -26,10 +27,14 @@ func main() {
 		LinkRepository: linkRepo,
 	})
 
+	stack := middleware.Chain(
+		middleware.CORS,
+		middleware.Logging,
+	)
+
 	server := http.Server{
 		Addr:    ":8081",
-		Handler: router,
+		Handler: stack(router),
 	}
-
 	server.ListenAndServe()
 }
