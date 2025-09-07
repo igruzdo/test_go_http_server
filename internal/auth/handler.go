@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"fmt"
 	"http_server/configs"
+	"http_server/pakages/jwt"
 	"http_server/pakages/request"
 	"http_server/pakages/response"
 	"net/http"
@@ -28,15 +28,26 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 }
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
+
 	return func(writer http.ResponseWriter, req *http.Request) {
-		fmt.Println(handler.Config.Auth.Secret)
 		body, err := request.HandleBody[LoginRequest](&writer, req)
+
+		userEmail, err := handler.AuthService.Login(body.Email, body.Password)
+
 		if err != nil {
-			response.Json(writer, err.Error(), 201)
+			response.Json(writer, err.Error(), http.StatusUnauthorized)
+			return
 		}
-		fmt.Println(body)
+
+		token, err := jwt.NewJWT(handler.Auth.Secret).Create(userEmail)
+
+		if err != nil {
+			response.Json(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		res := LoginResponse{
-			Token: "aaaa",
+			Token: token,
 		}
 
 		response.Json(writer, res, 201)
@@ -50,6 +61,24 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 			response.Json(writer, err.Error(), 201)
 		}
 
-		handler.AuthService.Register(body.Email, body.Password, body.Name)
+		userEmail, err := handler.AuthService.Register(body.Email, body.Password, body.Name)
+
+		if err != nil {
+			response.Json(writer, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		token, err := jwt.NewJWT(handler.Auth.Secret).Create(userEmail)
+
+		if err != nil {
+			response.Json(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res := LoginResponse{
+			Token: token,
+		}
+
+		response.Json(writer, res, 201)
 	}
 }
