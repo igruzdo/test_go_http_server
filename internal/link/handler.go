@@ -3,6 +3,7 @@ package link
 import (
 	"fmt"
 	"http_server/configs"
+	"http_server/internal/stat"
 	"http_server/pakages/middleware"
 	"http_server/pakages/request"
 	"http_server/pakages/response"
@@ -15,10 +16,12 @@ import (
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
 	Config         *configs.Config
+	StatRepository *stat.StatRepository
 }
 
 type LinkHandler struct {
 	LinkRepository *LinkRepository
+	StatRepository *stat.StatRepository
 	Config         *configs.Config
 }
 
@@ -130,7 +133,7 @@ func (handler *LinkHandler) GoTo() http.HandlerFunc {
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusNotFound)
 		}
-
+		handler.StatRepository.AddClick(link.ID)
 		http.Redirect(writer, req, link.Url, http.StatusTemporaryRedirect)
 	}
 }

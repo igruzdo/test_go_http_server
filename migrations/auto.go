@@ -2,6 +2,7 @@ package main
 
 import (
 	"http_server/internal/link"
+	"http_server/internal/stat"
 	"http_server/internal/user"
 	"os"
 
@@ -23,5 +24,5 @@ func main() {
 		panic(err)
 	}
 
-	db.AutoMigrate(&link.Link{}, &user.User{})
+	db.AutoMigrate(&link.Link{}, &user.User{}, &stat.Stat{})
 }

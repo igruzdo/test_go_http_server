@@ -5,6 +5,7 @@ import (
 	"http_server/internal/auth"
 	"http_server/internal/hello"
 	"http_server/internal/link"
+	"http_server/internal/stat"
 	"http_server/internal/user"
 	"http_server/pakages/db"
 	"http_server/pakages/middleware"
@@ -19,6 +20,7 @@ func main() {
 
 	linkRepo := link.NewLinkRepository(db)
 	userRepo := user.NewUserRepository(db)
+	statRepo := stat.NewStatRepository(db)
 
 	hello.NewHalloHandler(router)
 
@@ -31,6 +33,7 @@ func main() {
 
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
 		LinkRepository: linkRepo,
+		StatRepository: statRepo,
 		Config:         config,
 	})
 
