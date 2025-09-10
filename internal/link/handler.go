@@ -134,3 +134,25 @@ func (handler *LinkHandler) GoTo() http.HandlerFunc {
 		http.Redirect(writer, req, link.Url, http.StatusTemporaryRedirect)
 	}
 }
+
+func (handler *LinkHandler) GetAll() http.HandlerFunc {
+	return func(writer http.ResponseWriter, req *http.Request) {
+		limit, err := strconv.Atoi(req.URL.Query().Get("limit"))
+
+		if err != nil {
+			http.Error(writer, "invalid limit", http.StatusBadRequest)
+			return
+		}
+
+		offset, err := strconv.Atoi(req.URL.Query().Get("offset"))
+
+		if err != nil {
+			http.Error(writer, "invalid offset", http.StatusBadRequest)
+			return
+		}
+
+		links := handler.LinkRepository.GetLinks(uint(limit), uint(offset))
+
+		response.Json(writer, links, http.StatusOK)
+	}
+}
