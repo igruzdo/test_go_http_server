@@ -3,7 +3,7 @@ package link
 import (
 	"fmt"
 	"http_server/configs"
-	"http_server/internal/stat"
+	"http_server/pakages/di"
 	"http_server/pakages/middleware"
 	"http_server/pakages/request"
 	"http_server/pakages/response"
@@ -16,12 +16,12 @@ import (
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
 	Config         *configs.Config
-	StatRepository *stat.StatRepository
+	StatRepository di.IStatRepository
 }
 
 type LinkHandler struct {
 	LinkRepository *LinkRepository
-	StatRepository *stat.StatRepository
+	StatRepository di.IStatRepository
 	Config         *configs.Config
 }
 
