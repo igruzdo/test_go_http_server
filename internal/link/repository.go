@@ -3,6 +3,7 @@ package link
 import (
 	"http_server/pakages/db"
 
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -70,10 +71,10 @@ func (repo *LinkRepository) GetById(id uint) (*Link, error) {
 
 func (repo *LinkRepository) GetLinks(limit, offset uint) []Link {
 	var links []Link
-
-	repo.Database.
-		Table("links").
+	query := repo.Database.Table("links").
 		Where("deleted_at is null").
+		Session(&gorm.Session{})
+	query.
 		Order("id ASC").
 		Limit(int(limit)).
 		Offset(int(offset)).

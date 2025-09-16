@@ -8,23 +8,28 @@ import (
 	"http_server/internal/stat"
 	"http_server/internal/user"
 	"http_server/pakages/db"
+	"http_server/pakages/event"
 	"http_server/pakages/middleware"
 	"net/http"
 )
 
 func main() {
 	config := configs.LoadConfig()
-	db := db.NewDb(config)
-
+	newDb := db.NewDb(config)
 	router := http.NewServeMux()
+	eventBus := event.NewEventBus()
 
-	linkRepo := link.NewLinkRepository(db)
-	userRepo := user.NewUserRepository(db)
-	statRepo := stat.NewStatRepository(db)
+	linkRepo := link.NewLinkRepository(newDb)
+	userRepo := user.NewUserRepository(newDb)
+	statRepo := stat.NewStatRepository(newDb)
 
 	hello.NewHalloHandler(router)
 
 	authService := auth.NewAuthService(userRepo)
+	statService := stat.NewStatService(&stat.StatServiceDeps{
+		EventBus:       eventBus,
+		StatRepository: statRepo,
+	})
 
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config:      config,
@@ -33,6 +38,12 @@ func main() {
 
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
 		LinkRepository: linkRepo,
+		//StatRepository: statRepo,
+		Config:   config,
+		EventBus: eventBus,
+	})
+
+	stat.NewStatHandler(router, stat.StatHandlerDeps{
 		StatRepository: statRepo,
 		Config:         config,
 	})
@@ -46,5 +57,6 @@ func main() {
 		Addr:    ":8081",
 		Handler: stack(router),
 	}
+	go statService.AddClick()
 	server.ListenAndServe()
 }

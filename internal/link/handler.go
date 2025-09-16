@@ -3,7 +3,7 @@ package link
 import (
 	"fmt"
 	"http_server/configs"
-	"http_server/pakages/di"
+	"http_server/pakages/event"
 	"http_server/pakages/middleware"
 	"http_server/pakages/request"
 	"http_server/pakages/response"
@@ -16,13 +16,13 @@ import (
 type LinkHandlerDeps struct {
 	LinkRepository *LinkRepository
 	Config         *configs.Config
-	StatRepository di.IStatRepository
+	EventBus       *event.EventBus
 }
 
 type LinkHandler struct {
 	LinkRepository *LinkRepository
-	StatRepository di.IStatRepository
 	Config         *configs.Config
+	EventBus       *event.EventBus
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
@@ -133,7 +133,11 @@ func (handler *LinkHandler) GoTo() http.HandlerFunc {
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusNotFound)
 		}
-		handler.StatRepository.AddClick(link.ID)
+		//handler.StatRepository.AddClick(link.ID)
+		handler.EventBus.Publish(event.Event{
+			Type: event.LinkVisitedEvent,
+			Data: link.ID,
+		})
 		http.Redirect(writer, req, link.Url, http.StatusTemporaryRedirect)
 	}
 }

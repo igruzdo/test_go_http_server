@@ -33,13 +33,23 @@ func (repo *StatRepository) AddClick(linkId uint) {
 
 }
 
-// func (repo *StatRepository) GetByEmail(email string) (*Stat, error) {
-// 	var stat Stat
-// 	result := repo.Database.DB.First(&stat, "email = ?", email)
+func (repo *StatRepository) GetStats(by string, from time.Time, to time.Time) []GetStatResponse {
+	var stats []GetStatResponse
+	var selectQuery string
 
-// 	if result.Error != nil {
-// 		return nil, result.Error
-// 	}
+	switch by {
+	case GroupByDay:
+		selectQuery = "to_char(date, 'YYYY-MM-DD') as period, sum(clicks)"
+	case GroupByMonth:
+		selectQuery = "to_char(date, 'YYYY-MM') as period, sum(clicks)"
+	}
 
-// 	return &stat, nil
-// }
+	repo.Database.Table("stats").
+		Select(selectQuery).
+		Where("date BETWEEN ? AND ?", from, to).
+		Group("period").
+		Order("period").
+		Scan(&stats)
+
+	return stats
+}
